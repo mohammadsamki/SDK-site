@@ -33,7 +33,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # change the default user models to our custom model
-AUTH_USER_MODEL = 'accounts.User' 
+AUTH_USER_MODEL = 'accounts.User'
 
 # Application definition
 
@@ -91,7 +91,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                
+
                 # 'django.template.context_processors.i18n',
                 # 'django.template.context_processors.media',
                 # 'django.template.context_processors.static',
@@ -117,16 +117,16 @@ ASGI_APPLICATION = "SMS.asgi.application"
 # }
 
 # -----------------------------
-# NOTE: Some model fields may not work on sqlite db, 
+# NOTE: Some model fields may not work on sqlite db,
 # so consider using postgresql instead
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT'),
+        'NAME': 'defaultdb',
+        'USER': 'avnadmin',
+        'PASSWORD': 'AVNS_mycZ_ictGn2dyYoApmp',
+        'HOST': 'pg-34c9aba3-momosamak21-85b7.a.aivencloud.com',
+        'PORT': '24981',
     }
 }
 
@@ -185,8 +185,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com' # Here i'm using gmail as the email host, but you can change it
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('USER_EMAIL')
-EMAIL_HOST_PASSWORD = env('USER_PASSWORD')
+EMAIL_HOST_USER = 'momosamak21@gmail.com'
+EMAIL_HOST_PASSWORD = 'Engm2331996m@@'
 
 # crispy config
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -206,5 +206,5 @@ REST_FRAMEWORK = {
 }
 
 # Strip payment config
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
-STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
+# STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
+# STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
