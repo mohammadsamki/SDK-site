@@ -64,3 +64,4 @@ psycopg2-binary==2.9.5 # https://github.com/psycopg/psycopg2
 django-storages[boto3]==1.13.1  # https://github.com/jschneier/django-storages
 django-anymail[amazon_ses]==9.0  # https://github.com/anymail/django-anymail
 django-cleanup==8.0.0
+channels==4.0.0
