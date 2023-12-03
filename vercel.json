@@ -1,0 +1,14 @@
+{
+    "builds": [
+      {
+        "src": "SMS/wsgi.py",
+        "use": "@vercel/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "SMS/wsgi.py"
+      }
+    ]
+}
