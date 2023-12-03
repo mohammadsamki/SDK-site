@@ -67,3 +67,5 @@ django-cleanup==8.0.0
 channels==4.0.0
 reportlab==4.0.7
 stripe==6.0.0
+gopay==2.0.2
+
