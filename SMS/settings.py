@@ -206,6 +206,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication'
     ]
 }
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_DOMAIN = 'sdk-site-production-bf90.up.railway.app'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_DOMAIN = 'sdk-site-production-bf90.up.railway.app'
 
 # Strip payment config
 # STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
