@@ -169,6 +169,7 @@ class QuizMarkingList(QuizMarkerMixin, SittingFilterTitleMixin, ListView):
     #     context['marking_list'] = super(QuizMarkingList, self).get_queryset().filter(complete=True).filter(course__allocated_course__lecturer__pk=self.request.user.id)
     #     return context
     def get_queryset(self):
+        print(self.request.user.id)
         if self.request.user.is_superuser:
             queryset = super(QuizMarkingList, self).get_queryset().filter(complete=True)
         else:
@@ -178,7 +179,7 @@ class QuizMarkingList(QuizMarkerMixin, SittingFilterTitleMixin, ListView):
         user_filter = self.request.GET.get('user_filter')
         if user_filter:
             queryset = queryset.filter(user__username__icontains=user_filter)
-            
+
         return queryset
 
 

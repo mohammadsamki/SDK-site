@@ -1,14 +1,14 @@
-from django.db import models
-from django.urls import reverse
-from django.contrib.auth.models import AbstractUser, UserManager
 from django.conf import settings
-
+from django.contrib.auth.models import AbstractUser, UserManager
+from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 from PIL import Image
 
+# from result.models import TakenCourse
 from course.models import Program
-from .validators import ASCIIUsernameValidator
 
+from .validators import ASCIIUsernameValidator
 
 # LEVEL_COURSE = "Level course"
 BACHLOAR_DEGREE = "Intro"
@@ -28,7 +28,7 @@ GRAND_MOTHER = "Grand mother"
 GRAND_FATHER = "Grand father"
 OTHER = "Other"
 
-RELATION_SHIP  = (
+RELATION_SHIP = (
     (FATHER, "Father"),
     (MOTHER, "Mother"),
     (BROTHER, "Brother"),
@@ -38,16 +38,18 @@ RELATION_SHIP  = (
     (OTHER, "Other"),
 )
 
+
 class UserManager(UserManager):
+
     def search(self, query=None):
         qs = self.get_queryset()
         if query is not None:
             or_lookup = (Q(username__icontains=query) |
-                         Q(first_name__icontains=query)|
-                         Q(last_name__icontains=query)|
+                         Q(first_name__icontains=query) |
+                         Q(last_name__icontains=query) |
                          Q(email__icontains=query)
                         )
-            qs = qs.filter(or_lookup).distinct() # distinct() is often necessary with Q lookups
+            qs = qs.filter(or_lookup).distinct()  # distinct() is often necessary with Q lookups
         return qs
 
 
@@ -114,13 +116,14 @@ class User(AbstractUser):
 
 
 class StudentManager(models.Manager):
+
     def search(self, query=None):
         qs = self.get_queryset()
         if query is not None:
             or_lookup = (Q(level__icontains=query) |
                          Q(department__icontains=query)
                         )
-            qs = qs.filter(or_lookup).distinct() # distinct() is often necessary with Q lookups
+            qs = qs.filter(or_lookup).distinct()  # distinct() is often necessary with Q lookups
         return qs
 
 
@@ -141,6 +144,16 @@ class Student(models.Model):
     def delete(self, *args, **kwargs):
         self.student.delete()
         super().delete(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None  # Check if the Student instance is new.
+        super().save(*args, **kwargs)  # Call the "real" save() method.
+        if is_new and self.department:  # Check if the student is new and has a department.
+            from course.models import Course  # Import Course model here
+            from result.models import TakenCourse  # Import TakenCourse model here
+            courses = Course.objects.filter(program=self.department)
+  # Get all the courses in the department.
+            for course in courses:  # Iterate over the courses.
+                TakenCourse.objects.create(student=self, course=course)  # Create a TakenCourse instance for each course.
 
 
 class Parent(models.Model):

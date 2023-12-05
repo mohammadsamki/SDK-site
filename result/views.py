@@ -1,30 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-
-from accounts.models import User, Student
-from app.models import Session, Semester
-from course.models import Course
-from accounts.decorators import lecturer_required, student_required
-from .models import TakenCourse, Result
-
-#pdf
+# pdf
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse, JsonResponse
-
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, LongTable
-from reportlab.lib.styles import getSampleStyleSheet, black, ParagraphStyle
-from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
-from reportlab.platypus.tables import Table
-from reportlab.lib.units import inch
+from django.core.paginator import Paginator
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
+from reportlab.lib.styles import ParagraphStyle, black, getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import (Image, LongTable, Paragraph, SimpleDocTemplate,
+                                Spacer, Table, TableStyle)
+from reportlab.platypus.tables import Table
+
+from accounts.decorators import lecturer_required, student_required
+from accounts.models import Student, User
+from app.models import Semester, Session
+from course.models import Course
+
 from .models import *
+from .models import Result, TakenCourse
 
 cm = 2.54
+
 
 # ########################################################
 # Score Add & Add for
@@ -39,7 +39,7 @@ def add_score(request):
     """
     current_session = Session.objects.get(is_current_session=True)
     current_semester = get_object_or_404(Semester, is_current_semester=True, session=current_session)
-    # semester = Course.objects.filter(allocated_course__lecturer__pk=request.user.id, semester=current_semester)
+    semester = Course.objects.filter(allocated_course__lecturer__pk=request.user.id, semester=current_semester)
     courses = Course.objects.filter(allocated_course__lecturer__pk=request.user.id).filter(semester=current_semester)
     context = {
         "current_session": current_session,
@@ -52,6 +52,7 @@ def add_score(request):
 @login_required
 @lecturer_required
 def add_score_for(request, id):
+    print('here')
     """
     Shows a page where a lecturer will add score for students that are taking courses allocated to him
     in a specific semester and session
@@ -70,6 +71,11 @@ def add_score_for(request, id):
         #         course__semester=current_semester)
         students = TakenCourse.objects.filter(course__allocated_course__lecturer__pk=request.user.id).filter(
             course__id=id).filter(course__semester=current_semester)
+        # students = [taken_course.student for taken_course in TakenCourse.objects.filter(course__id=id, course__semester=current_semester)]
+
+
+        print(students)
+        print('course',course)
         context = {
             "title": "Submit Score | DjangoSMS",
             "courses": courses,
@@ -231,8 +237,8 @@ def result_sheet_pdf_view(request, id):
 
     doc = SimpleDocTemplate(flocation, rightMargin=0, leftMargin=6.5 * cm, topMargin=0.3 * cm, bottomMargin=0)
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle( name="ParagraphTitle", fontSize=11, fontName="FreeSansBold"))
-    Story = [Spacer(1,.2)]
+    styles.add(ParagraphStyle(name="ParagraphTitle", fontSize=11, fontName="FreeSansBold"))
+    Story = [Spacer(1, .2)]
     style = styles["Normal"]
 
     # picture = request.user.picture
@@ -250,7 +256,7 @@ def result_sheet_pdf_view(request, id):
     print("\nsettings.MEDIA_ROOT", settings.MEDIA_ROOT)
     print("\nsettings.STATICFILES_DIRS[0]", settings.STATICFILES_DIRS[0])
     logo = settings.STATICFILES_DIRS[0] + "/img/SDK.png"
-    im = Image(logo, 1*inch, 1*inch)
+    im = Image(logo, 1 * inch, 1 * inch)
     im.__setattr__("_offs_x", -200)
     im.__setattr__("_offs_y", -45)
     Story.append(im)
@@ -261,10 +267,10 @@ def result_sheet_pdf_view(request, id):
     normal.fontName = "Helvetica"
     normal.fontSize = 12
     normal.leading = 15
-    title = "<b> "+str(current_semester) + " Semester " + str(current_session) + " Result Sheet</b>"
+    title = "<b> " + str(current_semester) + " Semester " + str(current_session) + " Result Sheet</b>"
     title = Paragraph(title.upper(), normal)
     Story.append(title)
-    Story.append(Spacer(1,0.1*inch))
+    Story.append(Spacer(1, 0.1 * inch))
 
     style = getSampleStyleSheet()
     normal = style["Normal"]
@@ -275,7 +281,7 @@ def result_sheet_pdf_view(request, id):
     title = "<b>Course lecturer: " + request.user.get_full_name + "</b>"
     title = Paragraph(title.upper(), normal)
     Story.append(title)
-    Story.append(Spacer(1,0.1*inch))
+    Story.append(Spacer(1, 0.1 * inch))
 
     normal = style["Normal"]
     normal.alignment = TA_CENTER
@@ -286,27 +292,27 @@ def result_sheet_pdf_view(request, id):
     title = "<b>Level: </b>" + str(level.course.level)
     title = Paragraph(title.upper(), normal)
     Story.append(title)
-    Story.append(Spacer(1,.6*inch))
+    Story.append(Spacer(1, .6 * inch))
 
     elements = []
     count = 0
     header = [('S/N', 'ID NO.', 'FULL NAME', 'TOTAL', 'GRADE', 'POINT', 'COMMENT')]
 
-    table_header = Table(header, [inch], [0.5*inch])
+    table_header = Table(header, [inch], [0.5 * inch])
     table_header.setStyle(
         TableStyle([
-            ('BACKGROUND',(0,0),(-1,-1),colors.black),
-            ('TEXTCOLOR',(1,0),(-1,-1),colors.white),
-            ('TEXTCOLOR',(0,0),(0,0),colors.cyan),
-            ('ALIGN',(0,0),(-1,-1),'CENTER'),
-            ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
-            ('BOX',(0,0),(-1,-1),1,colors.black),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.black),
+            ('TEXTCOLOR', (1, 0), (-1, -1), colors.white),
+            ('TEXTCOLOR', (0, 0), (0, 0), colors.cyan),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOX', (0, 0), (-1, -1), 1, colors.black),
             ]))
     Story.append(table_header)
 
     for student in result:
 
-        data = [(count+1, student.student.student.username.upper(), Paragraph(student.student.student.get_full_name.capitalize(), styles['Normal']),
+        data = [(count + 1, student.student.student.username.upper(), Paragraph(student.student.student.get_full_name.capitalize(), styles['Normal']),
         student.total, student.grade, student.point, student.comment)]
         color = colors.black
         if student.grade == 'F':
@@ -316,12 +322,12 @@ def result_sheet_pdf_view(request, id):
         t_body = Table(data, colWidths=[inch])
         t_body.setStyle(
             TableStyle([
-                ('INNERGRID', (0,0), (-1,-1), 0.05, colors.black),
-                ('BOX', (0,0), (-1,-1), 0.1, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.05, colors.black),
+                ('BOX', (0, 0), (-1, -1), 0.1, colors.black),
                 ]))
         Story.append(t_body)
 
-    Story.append(Spacer(1,1*inch))
+    Story.append(Spacer(1, 1 * inch))
     style_right = ParagraphStyle(name='right', parent=styles['Normal'], alignment=TA_RIGHT)
     tbl_data = [
     [Paragraph("<b>Date:</b>_____________________________", styles["Normal"]), Paragraph("<b>No. of PASS:</b> " + str(no_of_pass), style_right)],
@@ -353,8 +359,8 @@ def course_registration_form(request):
     doc = SimpleDocTemplate(flocation, rightMargin=15, leftMargin=15, topMargin=0, bottomMargin=0)
     styles = getSampleStyleSheet()
 
-    Story = [Spacer(1,0.5)]
-    Story.append(Spacer(1,0.4*inch))
+    Story = [Spacer(1, 0.5)]
+    Story.append(Spacer(1, 0.4 * inch))
     style = styles["Normal"]
 
     style = getSampleStyleSheet()
@@ -378,7 +384,7 @@ def course_registration_form(request):
     Story.append(school_title)
 
     style = getSampleStyleSheet()
-    Story.append(Spacer(1,0.1*inch))
+    Story.append(Spacer(1, 0.1 * inch))
     department = style["Normal"]
     department.alignment = TA_CENTER
     department.fontName = "Helvetica"
@@ -387,7 +393,7 @@ def course_registration_form(request):
     department_title = "<b>DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING</b>"
     department_title = Paragraph(department_title, department)
     Story.append(department_title)
-    Story.append(Spacer(1,.3*inch))
+    Story.append(Spacer(1, .3 * inch))
 
     title = "<b><u>STUDENT COURSE REGISTRATION FORM</u></b>"
     title = Paragraph(title.upper(), normal)
@@ -402,7 +408,7 @@ def course_registration_form(request):
         ]]
     tbl = Table(tbl_data)
     Story.append(tbl)
-    Story.append(Spacer(1, 0.6*inch))
+    Story.append(Spacer(1, 0.6 * inch))
 
     style = getSampleStyleSheet()
     semester = style["Normal"]
@@ -419,22 +425,22 @@ def course_registration_form(request):
     # FIRST SEMESTER
     count = 0
     header = [('S/No', 'Course Code', 'Course Title', 'Unit', Paragraph('Name, Siganture of course lecturer & Date', style['Normal']))]
-    table_header = Table(header,1*[1.4*inch], 1*[0.5*inch])
+    table_header = Table(header, 1 * [1.4 * inch], 1 * [0.5 * inch])
     table_header.setStyle(
         TableStyle([
-                ('ALIGN',(-2,-2), (-2,-2),'CENTER'),
-                ('VALIGN',(-2,-2), (-2,-2),'MIDDLE'),
-                ('ALIGN',(1,0), (1,0),'CENTER'),
-                ('VALIGN',(1,0), (1,0),'MIDDLE'),
-                ('ALIGN',(0,0), (0,0),'CENTER'),
-                ('VALIGN',(0,0), (0,0),'MIDDLE'),
-                ('ALIGN',(-4,0), (-4,0),'LEFT'),
-                ('VALIGN',(-4,0), (-4,0),'MIDDLE'),
-                ('ALIGN',(-3,0), (-3,0),'LEFT'),
-                ('VALIGN',(-3,0), (-3,0),'MIDDLE'),
-                ('TEXTCOLOR',(0,-1),(-1,-1),colors.black),
-                ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-                ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
+                ('VALIGN', (-2, -2), (-2, -2), 'MIDDLE'),
+                ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+                ('VALIGN', (1, 0), (1, 0), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+                ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
+                ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
+                ('VALIGN', (-4, 0), (-4, 0), 'MIDDLE'),
+                ('ALIGN', (-3, 0), (-3, 0), 'LEFT'),
+                ('VALIGN', (-3, 0), (-3, 0), 'MIDDLE'),
+                ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
             ]))
     Story.append(table_header)
 
@@ -442,19 +448,19 @@ def course_registration_form(request):
     for course in courses:
         if course.course.semester == FIRST:
             first_semester_unit += int(course.course.credit)
-            data = [(count+1, course.course.code.upper(), Paragraph(course.course.title, style['Normal']), course.course.credit, '')]
+            data = [(count + 1, course.course.code.upper(), Paragraph(course.course.title, style['Normal']), course.course.credit, '')]
             color = colors.black
             count += 1
-            table_body=Table(data,1*[1.4*inch], 1*[0.3*inch])
+            table_body = Table(data, 1 * [1.4 * inch], 1 * [0.3 * inch])
             table_body.setStyle(
                 TableStyle([
-                    ('ALIGN',(-2,-2), (-2,-2),'CENTER'),
-                    ('ALIGN',(1,0), (1,0),'CENTER'),
-                    ('ALIGN',(0,0), (0,0),'CENTER'),
-                    ('ALIGN',(-4,0), (-4,0),'LEFT'),
-                    ('TEXTCOLOR',(0,-1),(-1,-1),colors.black),
-                    ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-                    ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                    ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
+                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+                    ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+                    ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
+                    ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
+                    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
                     ]))
             Story.append(table_body)
 
@@ -469,7 +475,7 @@ def course_registration_form(request):
     Story.append(semester_title)
 
     # FIRST SEMESTER ENDS HERE
-    Story.append(Spacer(1, 0.6*inch))
+    Story.append(Spacer(1, 0.6 * inch))
 
     style = getSampleStyleSheet()
     semester = style["Normal"]
@@ -483,22 +489,22 @@ def course_registration_form(request):
     # SECOND SEMESTER
     count = 0
     header = [('S/No', 'Course Code', 'Course Title', 'Unit', Paragraph('<b>Name, Signature of course lecturer & Date</b>', style['Normal']))]
-    table_header = Table(header,1*[1.4*inch], 1*[0.5*inch])
+    table_header = Table(header, 1 * [1.4 * inch], 1 * [0.5 * inch])
     table_header.setStyle(
         TableStyle([
-                ('ALIGN',(-2,-2), (-2,-2),'CENTER'),
-                ('VALIGN',(-2,-2), (-2,-2),'MIDDLE'),
-                ('ALIGN',(1,0), (1,0),'CENTER'),
-                ('VALIGN',(1,0), (1,0),'MIDDLE'),
-                ('ALIGN',(0,0), (0,0),'CENTER'),
-                ('VALIGN',(0,0), (0,0),'MIDDLE'),
-                ('ALIGN',(-4,0), (-4,0),'LEFT'),
-                ('VALIGN',(-4,0), (-4,0),'MIDDLE'),
-                ('ALIGN',(-3,0), (-3,0),'LEFT'),
-                ('VALIGN',(-3,0), (-3,0),'MIDDLE'),
-                ('TEXTCOLOR',(0,-1),(-1,-1),colors.black),
-                ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-                ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
+                ('VALIGN', (-2, -2), (-2, -2), 'MIDDLE'),
+                ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+                ('VALIGN', (1, 0), (1, 0), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+                ('VALIGN', (0, 0), (0, 0), 'MIDDLE'),
+                ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
+                ('VALIGN', (-4, 0), (-4, 0), 'MIDDLE'),
+                ('ALIGN', (-3, 0), (-3, 0), 'LEFT'),
+                ('VALIGN', (-3, 0), (-3, 0), 'MIDDLE'),
+                ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
             ]))
     Story.append(table_header)
 
@@ -506,19 +512,19 @@ def course_registration_form(request):
     for course in courses:
         if course.course.semester == SECOND:
             second_semester_unit += int(course.course.credit)
-            data = [(count+1, course.course.code.upper(), Paragraph(course.course.title, style['Normal']), course.course.credit, '')]
+            data = [(count + 1, course.course.code.upper(), Paragraph(course.course.title, style['Normal']), course.course.credit, '')]
             color = colors.black
             count += 1
-            table_body=Table(data,1*[1.4*inch], 1*[0.3*inch])
+            table_body = Table(data, 1 * [1.4 * inch], 1 * [0.3 * inch])
             table_body.setStyle(
                 TableStyle([
-                    ('ALIGN',(-2,-2), (-2,-2),'CENTER'),
-                    ('ALIGN',(1,0), (1,0),'CENTER'),
-                    ('ALIGN',(0,0), (0,0),'CENTER'),
-                    ('ALIGN',(-4,0), (-4,0),'LEFT'),
-                    ('TEXTCOLOR',(0,-1),(-1,-1),colors.black),
-                    ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-                    ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                    ('ALIGN', (-2, -2), (-2, -2), 'CENTER'),
+                    ('ALIGN', (1, 0), (1, 0), 'CENTER'),
+                    ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+                    ('ALIGN', (-4, 0), (-4, 0), 'LEFT'),
+                    ('TEXTCOLOR', (0, -1), (-1, -1), colors.black),
+                    ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                    ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
                     ]))
             Story.append(table_body)
 
@@ -549,13 +555,13 @@ def course_registration_form(request):
     # FIRST SEMESTER ENDS HERE
 
     logo = settings.STATICFILES_DIRS[0] + "/img/SDK.png"
-    im_logo = Image(logo, 1*inch, 1*inch)
+    im_logo = Image(logo, 1 * inch, 1 * inch)
     im_logo.__setattr__("_offs_x", -218)
     im_logo.__setattr__("_offs_y", 480)
     Story.append(im_logo)
 
-    picture =  settings.BASE_DIR + request.user.get_picture()
-    im = Image(picture, 1.0*inch, 1.0*inch)
+    picture = settings.BASE_DIR + request.user.get_picture()
+    im = Image(picture, 1.0 * inch, 1.0 * inch)
     im.__setattr__("_offs_x", 218)
     im.__setattr__("_offs_y", 550)
     Story.append(im)
@@ -564,6 +570,6 @@ def course_registration_form(request):
     fs = FileSystemStorage(settings.MEDIA_ROOT + "/registration_form")
     with fs.open(fname) as pdf:
         response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename='+fname+''
+        response['Content-Disposition'] = 'inline; filename=' + fname + ''
         return response
     return response

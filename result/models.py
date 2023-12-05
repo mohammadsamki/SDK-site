@@ -1,8 +1,9 @@
+from django.apps import apps
 from django.db import models
 from django.urls import reverse
 
 from accounts.models import Student
-from app.models import Session, Semester
+from app.models import Semester, Session
 from course.models import Course
 
 YEARS = (
@@ -72,6 +73,7 @@ COMMENT = (
 
 
 class TakenCourseManager(models.Manager):
+
     def new_or_get(self, request):
         cart_id = request.session.get("cart_id", None)
         qs = self.get_queryset().filter(id=cart_id)
