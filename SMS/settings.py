@@ -207,10 +207,11 @@ REST_FRAMEWORK = {
     ]
 }
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_DOMAIN = ['*']
+SESSION_COOKIE_DOMAIN = 'sdk-site-production.up.railway.app'
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_DOMAIN = ['*']
-CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_COOKIE_DOMAIN = 'sdk-site-production.up.railway.app'
+CSRF_TRUSTED_ORIGINS = ['https://*.sdk-site-production-bf90.up.railway.app','https://*.127.0.0.1','https://sdk-site-production.up.railway.app']
+
 
 # Strip payment config
 # STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
