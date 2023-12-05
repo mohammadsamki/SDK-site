@@ -207,9 +207,9 @@ REST_FRAMEWORK = {
     ]
 }
 SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_DOMAIN = 'sdk-site-production-bf90.up.railway.app'
+SESSION_COOKIE_DOMAIN = ['*']
 CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_DOMAIN = 'sdk-site-production-bf90.up.railway.app'
+CSRF_COOKIE_DOMAIN = ['*']
 CSRF_TRUSTED_ORIGINS = ['*']
 
 # Strip payment config
