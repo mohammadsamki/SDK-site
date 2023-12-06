@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.conf import settings
+from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.decorators import admin_required, lecturer_required
-from .forms import SessionForm, SemesterForm, NewsAndEventsForm
+
+from .forms import NewsAndEventsForm, SemesterForm, SessionForm
 from .models import *
 
 
@@ -15,7 +16,7 @@ from .models import *
 def home_view(request):
     items = NewsAndEvents.objects.all().order_by('-updated_date')
     context = {
-        'title': "News & Events | DjangoSMS",
+        'title': "News & Events | SDK",
         'items': items,
     }
     return render(request, 'app/index.html', context)
@@ -36,7 +37,7 @@ def post_add(request):
     else:
         form = NewsAndEventsForm()
     return render(request, 'app/post_add.html', {
-        'title': 'Add Post | DjangoSMS',
+        'title': 'Add Post | SDK',
         'form': form,
     })
 
@@ -58,7 +59,7 @@ def edit_post(request, pk):
     else:
         form = NewsAndEventsForm(instance=instance)
     return render(request, 'app/post_add.html', {
-        'title': 'Edit Post | DjangoSMS',
+        'title': 'Edit Post | SDK',
         'form': form,
     })
 
@@ -71,6 +72,7 @@ def delete_post(request, pk):
     post.delete()
     messages.success(request, (title + ' has been deleted.'))
     return redirect('home')
+
 
 # ########################################################
 # Session
@@ -128,7 +130,7 @@ def session_update_view(request, pk):
                         unset = Session.objects.get(is_current_session=True)
                         unset.is_current_session = False
                         unset.save()
-            
+
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Session updated successfully. ')
@@ -221,7 +223,7 @@ def semester_add_view(request):
 def semester_update_view(request, pk):
     semester = Semester.objects.get(pk=pk)
     if request.method == 'POST':
-        if request.POST.get('is_current_semester') == 'True': # returns string of 'True' if the user selected yes for 'is current semester'
+        if request.POST.get('is_current_semester') == 'True':  # returns string of 'True' if the user selected yes for 'is current semester'
             unset_semester = Semester.objects.get(is_current_semester=True)
             unset_semester.is_current_semester = False
             unset_semester.save()
@@ -261,7 +263,6 @@ def semester_delete_view(request, pk):
     return redirect('semester_list')
 # ########################################################
 
-
 # from django.shortcuts import render_to_response
 # from django.template import RequestContext
 
@@ -270,19 +271,18 @@ def semester_delete_view(request, pk):
 #     response.status_code = 404
 #     return response
 
-
 # def handler500(request, *args, **argv):
 #     response = render_to_response('common/500.html', {}, context_instance=RequestContext(request))
 #     response.status_code = 500
 
 #     return response
 
-
 # def handler400(request, exception, template_name="common/400.html"):
 #     response = render_to_response('common/400.html', context_instance=RequestContext(request))
 #     response.status_code = 400
 
 #     return response
+
 
 @login_required
 @admin_required

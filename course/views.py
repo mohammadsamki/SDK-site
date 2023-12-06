@@ -1,22 +1,21 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.db.models import Sum, Avg, Max, Min, Count
-from django.contrib.auth.decorators import login_required
-from django.views.generic import CreateView
-from django.core.paginator import Paginator
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Avg, Count, Max, Min, Sum
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
-from django.views.generic import ListView
+from django.views.generic import CreateView, ListView
 
-from accounts.models import User, Student
-from app.models import Session, Semester
-from result.models import TakenCourse
 from accounts.decorators import lecturer_required, student_required
-from .forms import (
-    ProgramForm, CourseAddForm, CourseAllocationForm, 
-    EditCourseAllocationForm, UploadFormFile, UploadFormVideo
-)
-from .models import Program, Course, CourseAllocation, Upload, UploadVideo
+from accounts.models import Student, User
+from app.models import Semester, Session
+from result.models import TakenCourse
+
+from .forms import (CourseAddForm, CourseAllocationForm,
+                    EditCourseAllocationForm, ProgramForm, UploadFormFile,
+                    UploadFormVideo)
+from .models import Course, CourseAllocation, Program, Upload, UploadVideo
 
 
 # ########################################################
@@ -31,7 +30,7 @@ def program_view(request):
         programs = Program.objects.filter(title__icontains=program_filter)
 
     return render(request, 'course/program_list.html', {
-        'title': "Programs | DjangoSMS",
+        'title': "Programs | SDK",
         'programs': programs,
     })
 
@@ -51,7 +50,7 @@ def program_add(request):
         form = ProgramForm()
 
     return render(request, 'course/program_add.html', {
-        'title': "Add Program | DjangoSMS",
+        'title': "Add Program | SDK",
         'form': form,
     })
 
@@ -70,7 +69,7 @@ def program_detail(request, pk):
     return render(request, 'course/program_single.html', {
         'title': program.title,
         'program': program, 'courses': courses, 'credits': credits
-    }, )
+    },)
 
 
 @login_required
@@ -88,7 +87,7 @@ def program_edit(request, pk):
         form = ProgramForm(instance=program)
 
     return render(request, 'course/program_add.html', {
-        'title': "Edit Program | DjangoSMS",
+        'title': "Edit Program | SDK",
         'form': form
     })
 
@@ -103,6 +102,7 @@ def program_delete(request, pk):
 
     return redirect('programs')
 # ########################################################
+
 
 # ########################################################
 # Course views
@@ -123,7 +123,7 @@ def course_single(request, slug):
         'videos': videos,
         'lecturers': lecturers,
         'media_url': settings.MEDIA_ROOT,
-    }, )
+    },)
 
 
 @login_required
@@ -144,9 +144,9 @@ def course_add(request, pk):
         form = CourseAddForm(initial={'program': Program.objects.get(pk=pk)})
 
     return render(request, 'course/course_add.html', {
-        'title': "Add Course | DjangoSMS",
+        'title': "Add Course | SDK",
         'form': form, 'program': pk, 'users': users
-    }, )
+    },)
 
 
 @login_required
@@ -167,10 +167,10 @@ def course_edit(request, slug):
         form = CourseAddForm(instance=course)
 
     return render(request, 'course/course_add.html', {
-        'title': "Edit Course | DjangoSMS",
+        'title': "Edit Course | SDK",
         # 'form': form, 'program': pk, 'course': pk
         'form': form
-    }, )
+    },)
 
 
 @login_required
@@ -218,7 +218,7 @@ class CourseAllocationFormView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = "Assign Course | DjangoSMS"
+        context['title'] = "Assign Course | SDK"
         return context
 
 
@@ -226,7 +226,7 @@ class CourseAllocationFormView(CreateView):
 def course_allocation_view(request):
     allocated_courses = CourseAllocation.objects.all()
     return render(request, 'course/course_allocation_view.html', {
-        'title': "Course Allocations | DjangoSMS",
+        'title': "Course Allocations | SDK",
         "allocated_courses": allocated_courses
     })
 
@@ -245,9 +245,9 @@ def edit_allocated_course(request, pk):
         form = EditCourseAllocationForm(instance=allocated)
 
     return render(request, 'course/course_allocation_form.html', {
-        'title': "Edit Course Allocated | DjangoSMS",
+        'title': "Edit Course Allocated | SDK",
         'form': form, 'allocated': pk
-    }, )
+    },)
 
 
 @login_required
@@ -277,7 +277,7 @@ def handle_file_upload(request, slug):
     else:
         form = UploadFormFile()
     return render(request, 'upload/upload_file_form.html', {
-        'title': "File Upload | DjangoSMS",
+        'title': "File Upload | SDK",
         'form': form, 'course': course
     })
 
@@ -310,6 +310,7 @@ def handle_file_delete(request, slug, file_id):
     messages.success(request, (file.title + ' has been deleted.'))
     return redirect('course_detail', slug=slug)
 
+
 # ########################################################
 # Video Upload views
 # ########################################################
@@ -326,7 +327,7 @@ def handle_video_upload(request, slug):
     else:
         form = UploadFormVideo()
     return render(request, 'upload/upload_video_form.html', {
-        'title': "Video Upload | DjangoSMS",
+        'title': "Video Upload | SDK",
         'form': form, 'course': course
     })
 

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Search result for {{ query }} | DjangoSMS{% endblock title %}
+{% block title %}Search result for {{ query }} | SDK{% endblock title %}
 
 {% load class_name %}
 
@@ -16,7 +16,7 @@
     .br-orange{border: 1px solid #fd7e14; border-radius: 7px;}
     .class-item {
         display: block;
-        border-left: 4px solid #6cbd45; 
+        border-left: 4px solid #6cbd45;
         padding: 1rem !important;
         background: #f8f9fa;
         border-radius: 3px;
@@ -32,7 +32,7 @@
     .class-item:hover h4 a {
       color: #fff; }
     .class-item:hover p, .class-item:hover span {
-      color: rgb(158, 239, 119); 
+      color: rgb(158, 239, 119);
     }
 </style>
 
@@ -60,7 +60,7 @@
                 <h4><a href='{{ object.get_absolute_url }}'><b>{{ object }}</b></a></h4>
                 <p>{{ object.summary }}</p>
             </div><hr>
-            
+
         {% elif klass == 'NewsAndEvents' %}
             <div class="session-wrapper">
                 <div class="session"><div class="info-text bg-orange">News And Events</div></div>
@@ -102,7 +102,7 @@
     <div class="col-12 text-center"><p><i class="far fa-frown fa-2x"></i> No result for your search</p></div>
     <div class='col-12 col-md-6 mx-auto my-5 py-5'>
     <form method='GET' class='' action='.'>
-    
+
         <div class="input-group form-group-no-border mx-auto" style="margin-bottom: 0px; font-size: 32px;">
             <input type="text" name="q" data-toggle="popover" data-placement="bottom" data-content="Press enter to search" class="form-control cfe-nav mt-0 py-3" placeholder="Search..." value="{{ request.GET.q }}" data-original-title="" title="" autofocus="autofocus" required>
             <button type="submit" class="btn btn-outline-secondary">

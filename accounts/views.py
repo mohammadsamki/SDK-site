@@ -1,27 +1,30 @@
-from django.http.response import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import Http404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
-from django.views.generic import CreateView, ListView
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import (PasswordChangeForm, UserChangeForm,
+                                       UserCreationForm)
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import Http404
+from django.http.response import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.views.generic import CreateView, ListView
 
-from .decorators import lecturer_required, student_required, admin_required
+from app.models import Semester, Session
 from course.models import Course
 from result.models import TakenCourse
-from app.models import Session, Semester
-from .forms import StaffAddForm, StudentAddForm, ProfileUpdateForm, ParentAddForm
-from .models import User, Student, Parent
+
+from .decorators import admin_required, lecturer_required, student_required
+from .forms import (ParentAddForm, ProfileUpdateForm, StaffAddForm,
+                    StudentAddForm)
+from .models import Parent, Student, User
 
 
 def validate_username(request):
     username = request.GET.get("username", None)
     data = {
-        "is_taken": User.objects.filter(username__iexact = username).exists()
+        "is_taken": User.objects.filter(username__iexact=username).exists()
     }
     return JsonResponse (data)
 
@@ -152,7 +155,7 @@ def profile_update(request):
     else:
         form = ProfileUpdateForm(instance=request.user)
     return render(request, 'setting/profile_info_change.html', {
-        'title': 'Setting | DjangoSMS',
+        'title': 'Setting | SDK',
         'form': form,
     })
 
@@ -175,6 +178,7 @@ def change_password(request):
     })
 # ########################################################
 
+
 @login_required
 @admin_required
 def staff_add_view(request):
@@ -190,7 +194,7 @@ def staff_add_view(request):
         form = StaffAddForm()
 
     context = {
-        'title': 'Lecturer Add | DjangoSMS',
+        'title': 'Lecturer Add | SDK',
         'form': form,
     }
 
@@ -214,7 +218,7 @@ def edit_staff(request, pk):
     else:
         form = ProfileUpdateForm(instance=instance)
     return render(request, 'accounts/edit_lecturer.html', {
-        'title': 'Edit Lecturer | DjangoSMS',
+        'title': 'Edit Lecturer | SDK',
         'form': form,
     })
 
@@ -227,9 +231,8 @@ class LecturerListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = "Lecturers | DjangoSMS"
+        context['title'] = "Lecturers | SDK"
         return context
-
 
 # @login_required
 # @lecturer_required
@@ -237,6 +240,7 @@ class LecturerListView(ListView):
 #     staff = get_object_or_404(User, pk=pk)
 #     staff.delete()
 #     return redirect('lecturer_list')
+
 
 @login_required
 @admin_required
@@ -269,7 +273,7 @@ def student_add_view(request):
         form = StudentAddForm()
 
     return render(request, 'accounts/add_student.html', {
-        'title': "Add Student | DjangoSMS",
+        'title': "Add Student | SDK",
         'form': form
     })
 
@@ -292,7 +296,7 @@ def edit_student(request, pk):
     else:
         form = ProfileUpdateForm(instance=instance)
     return render(request, 'accounts/edit_student.html', {
-        'title': 'Edit-profile | DjangoSMS',
+        'title': 'Edit-profile | SDK',
         'form': form,
     })
 
@@ -311,7 +315,7 @@ class StudentListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = "Students | DjangoSMS"
+        context['title'] = "Students | SDK"
         return context
 
 
@@ -330,7 +334,6 @@ class ParentAdd(CreateView):
     model = Parent
     form_class = ParentAddForm
     template_name = 'accounts/parent_form.html'
-
 
 # def parent_add(request):
 #     if request.method == 'POST':

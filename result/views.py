@@ -73,11 +73,10 @@ def add_score_for(request, id):
             course__id=id).filter(course__semester=current_semester)
         # students = [taken_course.student for taken_course in TakenCourse.objects.filter(course__id=id, course__semester=current_semester)]
 
-
         print(students)
-        print('course',course)
+        print('course', course)
         context = {
-            "title": "Submit Score | DjangoSMS",
+            "title": "Submit Score | SDK",
             "courses": courses,
             "course": course,
             # "myclass": myclass,
