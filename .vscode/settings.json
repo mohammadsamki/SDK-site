@@ -20,5 +20,6 @@
     "python.analysis.completeFunctionParens": true,
     "vsintellicode.sql.completionsEnabled": false,
     "githubIssues.issueBranchTitle": "feature/${issueNumber}_${sanitizedIssueTitle}",
-    "errorLens.messageEnabled": false
+    "errorLens.messageEnabled": false,
+    "tabnine.experimentalAutoImports": true
 }
